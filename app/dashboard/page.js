@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 /* ─────────────────────────────────────────────
@@ -31,6 +31,14 @@ const mobileStyles = `
   }
   @media (max-width: 480px) {
     .db-actions-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
   }
 `;
 
@@ -67,7 +75,8 @@ function Modal({ open, onClose, title, children, wide }) {
 function Btn({ children, onClick, style: s, variant = 'primary', type = 'button' }) {
   const base = {
     padding: '12px 20px', borderRadius: 10, fontSize: 14, fontWeight: 700,
-    cursor: 'pointer', border: 'none', transition: 'opacity 0.2s', ...s,
+    cursor: 'pointer', border: 'none', transition: 'opacity 0.2s',
+    WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', ...s,
   };
   if (variant === 'primary') return <button type={type} onClick={onClick} style={{ background: '#0a2240', color: '#fff', ...base }}>{children}</button>;
   if (variant === 'gold') return <button type={type} onClick={onClick} style={{ background: '#d4af37', color: '#0a2240', ...base }}>{children}</button>;
@@ -109,14 +118,69 @@ function InputRow({ icon, label, name, placeholder, type = 'text', optional, val
 }
 
 /* ─────────────────────────────────────────────
-   TRANSFER MODAL — 4 STEPS:
-   1: Form  2: Gmail OTP  3: Authenticator OTP  4: Receipt
+   PROCESSING SCREEN
+───────────────────────────────────────────── */
+function ProcessingScreen({ onDone }) {
+  const [dots, setDots] = useState(0);
+
+  useEffect(() => {
+    const dotInterval = setInterval(() => setDots(d => (d + 1) % 4), 400);
+    const timer = setTimeout(onDone, 3000);
+    return () => { clearInterval(dotInterval); clearTimeout(timer); };
+  }, [onDone]);
+
+  return (
+    <div style={{ textAlign: 'center', padding: '32px 0' }}>
+      {/* Spinner */}
+      <div style={{
+        width: 72, height: 72, borderRadius: '50%',
+        border: '5px solid #e8ecf0',
+        borderTop: '5px solid #0a2240',
+        margin: '0 auto 28px',
+        animation: 'spin 1s linear infinite',
+      }} />
+
+      <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 20, margin: '0 0 10px' }}>
+        Processing Transfer{'.'.repeat(dots)}
+      </h3>
+      <p style={{ color: '#666', fontSize: 14, lineHeight: 1.7, margin: '0 0 28px' }}>
+        Please wait while we securely process your request.<br />
+        Do not close this window.
+      </p>
+
+      {/* Animated steps */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'left', maxWidth: 260, margin: '0 auto' }}>
+        {[
+          { label: 'Validating transfer details', delay: 0 },
+          { label: 'Checking account balance', delay: 0.3 },
+          { label: 'Initiating security verification', delay: 0.6 },
+        ].map(({ label, delay }, i) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%', background: '#0a2240', flexShrink: 0,
+              animation: `pulse-dot 1.2s ease-in-out ${delay}s infinite`,
+            }} />
+            <span style={{ fontSize: 13, color: '#555' }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 32, background: '#f8f9fa', borderRadius: 10, padding: '10px 16px', display: 'inline-block' }}>
+        <span style={{ fontSize: 12, color: '#888' }}>🔒 Secured by 256-bit SSL Encryption</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   TRANSFER MODAL — 5 STEPS:
+   1: Form → 2: Processing → 3: Gmail OTP → 4: Authenticator OTP → 5: Receipt
 ───────────────────────────────────────────── */
 function TransferModal({ open, onClose, title }) {
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState({
     amount: '', beneficiary: '', iban: '', bank: '', swift: '',
-    routing: '', pin: '', address: '', remarks: '',
+    routing: '', address: '', remarks: '',
   });
   const [gmailOtp, setGmailOtp] = useState('');
   const [gmailError, setGmailError] = useState('');
@@ -131,41 +195,37 @@ function TransferModal({ open, onClose, title }) {
 
   function handleSubmitForm(e) {
     e.preventDefault();
-    setStep(2);
+    setStep(2); // go to processing
   }
 
   function handleGmailOtp(e) {
     e.preventDefault();
     if (gmailOtp === OTP_CODE) {
-      setStep(3);
+      setStep(4);
     } else {
-      setGmailError('Incorrect Gmail code. Please try again.');
+      setGmailError('Incorrect code. Please try again.');
     }
   }
 
   function handleAuthOtp(e) {
     e.preventDefault();
     if (authOtp === OTP_CODE) {
-      setStep(4);
+      setStep(5);
     } else {
-      setAuthError('Incorrect Authenticator code. Please try again.');
+      setAuthError('Incorrect code. Please try again.');
     }
-  }
-
-  function handlePrint() {
-    window.print();
   }
 
   function handleClose() {
     setStep(1);
-    setFields({ amount: '', beneficiary: '', iban: '', bank: '', swift: '', routing: '', pin: '', address: '', remarks: '' });
+    setFields({ amount: '', beneficiary: '', iban: '', bank: '', swift: '', routing: '', address: '', remarks: '' });
     setGmailOtp(''); setGmailError('');
     setAuthOtp(''); setAuthError('');
     onClose();
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title={title} wide>
+    <Modal open={open} onClose={step === 2 ? undefined : handleClose} title={title} wide>
 
       {/* ── STEP 1: FORM ── */}
       {step === 1 && (
@@ -182,8 +242,9 @@ function TransferModal({ open, onClose, title }) {
             </div>
             <InputRow icon="🏢" label="Bank" name="bank" placeholder="Recipient's bank name" value={fields.bank} onChange={handleChange} />
             <InputRow icon="🔑" label="SWIFT Code" name="swift" placeholder="e.g. CHASEUS33" value={fields.swift} onChange={handleChange} />
-            <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange} />
-            <InputRow icon="🔒" label="PIN" name="pin" placeholder="Your transaction PIN" type="password" value={fields.pin} onChange={handleChange} />
+            <div style={{ gridColumn: '1 / -1' }}>
+              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange} />
+            </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <InputRow icon="📍" label="Bank Address" name="address" placeholder="Street, City, State, ZIP" optional value={fields.address} onChange={handleChange} />
             </div>
@@ -198,8 +259,13 @@ function TransferModal({ open, onClose, title }) {
         </form>
       )}
 
-      {/* ── STEP 2: GMAIL OTP ── */}
+      {/* ── STEP 2: PROCESSING ── */}
       {step === 2 && (
+        <ProcessingScreen onDone={() => setStep(3)} />
+      )}
+
+      {/* ── STEP 3: GMAIL OTP ── */}
+      {step === 3 && (
         <form onSubmit={handleGmailOtp}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>📧</div>
@@ -208,18 +274,6 @@ function TransferModal({ open, onClose, title }) {
               A verification code has been sent to your Gmail address.<br />
               Enter the code below to continue.
             </p>
-          </div>
-
-          {/* Informational code box */}
-          <div style={{
-            background: '#f0f4ff', border: '1.5px solid #c7d5ff', borderRadius: 12,
-            padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <span style={{ fontSize: 22 }}>📬</span>
-            <div>
-              <div style={{ fontSize: 12, color: '#555', fontWeight: 600 }}>Gmail Code</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: '#0a2240', letterSpacing: 6 }}>1234</div>
-            </div>
           </div>
 
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
@@ -232,6 +286,7 @@ function TransferModal({ open, onClose, title }) {
             placeholder="Enter code"
             maxLength={6}
             required
+            autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
               fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
@@ -246,28 +301,25 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
 
-          {/* Progress indicator */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '18px 0 8px' }}>
-            {['Gmail Code', 'Authenticator', 'Complete'].map((label, i) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: i === 0 ? '#0a2240' : '#ddd',
-                }} />
-                {i < 2 && <div style={{ width: 24, height: 2, background: '#ddd' }} />}
-              </div>
-            ))}
+          {/* Step dots */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, margin: '20px 0 8px' }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0a2240' }} />
+            <div style={{ width: 30, height: 2, background: '#ddd' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ddd' }} />
+            <div style={{ width: 30, height: 2, background: '#ddd' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ddd' }} />
           </div>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 1 of 2 — Gmail Verification</p>
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(1)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify Gmail Code</Btn>
           </div>
         </form>
       )}
 
-      {/* ── STEP 3: AUTHENTICATOR OTP ── */}
-      {step === 3 && (
+      {/* ── STEP 4: AUTHENTICATOR OTP ── */}
+      {step === 4 && (
         <form onSubmit={handleAuthOtp}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
@@ -276,18 +328,6 @@ function TransferModal({ open, onClose, title }) {
               Enter the code from your Authenticator app<br />
               to complete the security verification.
             </p>
-          </div>
-
-          {/* Informational code box */}
-          <div style={{
-            background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12,
-            padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <span style={{ fontSize: 22 }}>🔑</span>
-            <div>
-              <div style={{ fontSize: 12, color: '#555', fontWeight: 600 }}>Authenticator Code</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: '#0a2240', letterSpacing: 6 }}>1234</div>
-            </div>
           </div>
 
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
@@ -300,6 +340,7 @@ function TransferModal({ open, onClose, title }) {
             placeholder="Enter code"
             maxLength={6}
             required
+            autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
               fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
@@ -314,28 +355,25 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
 
-          {/* Progress indicator */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '18px 0 8px' }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: i <= 1 ? '#0a2240' : '#ddd',
-                }} />
-                {i < 2 && <div style={{ width: 24, height: 2, background: i === 0 ? '#0a2240' : '#ddd' }} />}
-              </div>
-            ))}
+          {/* Step dots */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, margin: '20px 0 8px' }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#22a55e' }} />
+            <div style={{ width: 30, height: 2, background: '#0a2240' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0a2240' }} />
+            <div style={{ width: 30, height: 2, background: '#ddd' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ddd' }} />
           </div>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 2 of 2 — Authenticator Verification</p>
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-            <Btn variant="outline" onClick={() => setStep(2)} style={{ flex: 1 }}>← Back</Btn>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Btn variant="outline" onClick={() => setStep(3)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify & Transfer</Btn>
           </div>
         </form>
       )}
 
-      {/* ── STEP 4: RECEIPT ── */}
-      {step === 4 && (
+      {/* ── STEP 5: RECEIPT ── */}
+      {step === 5 && (
         <div>
           <div style={{
             border: '2px dashed #ccc', borderRadius: 16, padding: '24px',
@@ -378,10 +416,6 @@ function TransferModal({ open, onClose, title }) {
 
             <div style={{ textAlign: 'center', marginTop: 16, borderTop: '1px dashed #ccc', paddingTop: 14 }}>
               <div style={{ color: '#22a55e', fontWeight: 800, fontSize: 15 }}>✔ Transfer Successful</div>
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 6 }}>
-                <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999 }}>Gmail ✓</span>
-                <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999 }}>Authenticator ✓</span>
-              </div>
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 8 }}>Keep this receipt for your records.</div>
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>Liberty Banking | FDIC Insured | libertybanking.com</div>
             </div>
@@ -389,7 +423,7 @@ function TransferModal({ open, onClose, title }) {
 
           <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
             <Btn variant="outline" onClick={handleClose} style={{ flex: 1 }}>Close</Btn>
-            <Btn variant="gold" onClick={handlePrint} style={{ flex: 1 }}>🖨 Print Receipt</Btn>
+            <Btn variant="gold" onClick={() => window.print()} style={{ flex: 1 }}>🖨 Print Receipt</Btn>
           </div>
         </div>
       )}
@@ -415,6 +449,7 @@ function PayBillsModal({ open, onClose }) {
               <button key={label} onClick={() => setSelected(label)} style={{
                 display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px',
                 border: '2px solid #eee', borderRadius: 14, background: '#fff', cursor: 'pointer', textAlign: 'left',
+                WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
               }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#0a2240'; e.currentTarget.style.background = '#f8f9ff'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = '#eee'; e.currentTarget.style.background = '#fff'; }}
@@ -596,19 +631,18 @@ export default function DashboardPage() {
   const open = (name) => setOpenModal(name);
   const close = () => setOpenModal(null);
 
-  /* Buy Crypto removed from this list */
   const quickActions = [
-    { id: 'wire',        icon: '🌐', label: 'Wire Transfer',    color: '#0a2240' },
-    { id: 'local',       icon: '🏦', label: 'Local Transfer',   color: '#1a4080' },
-    { id: 'internal',    icon: '🔄', label: 'Internal Transfer',color: '#0f3060' },
-    { id: 'bills',       icon: '📄', label: 'Pay Bills',        color: '#0369a1' },
-    { id: 'beneficiary', icon: '👥', label: 'Add Beneficiary',  color: '#15803d' },
-    { id: 'carddeposit', icon: '💳', label: 'Card Deposit',     color: '#b45309' },
-    { id: 'checkdeposit',icon: '🖊', label: 'Check Deposit',    color: '#7e22ce' },
-    { id: 'alerts',      icon: '🔔', label: 'Alerts',           color: '#dc2626' },
-    { id: 'loans',       icon: '🏠', label: 'Loans',            color: '#065f46' },
-    { id: 'investment',  icon: '📈', label: 'Investment',       color: '#92400e' },
-    { id: 'support',     icon: '🎧', label: 'Support',          color: '#1e3a5f' },
+    { id: 'wire',         icon: '🌐', label: 'Wire Transfer',     color: '#0a2240' },
+    { id: 'local',        icon: '🏦', label: 'Local Transfer',    color: '#1a4080' },
+    { id: 'internal',     icon: '🔄', label: 'Internal Transfer', color: '#0f3060' },
+    { id: 'bills',        icon: '📄', label: 'Pay Bills',         color: '#0369a1' },
+    { id: 'beneficiary',  icon: '👥', label: 'Add Beneficiary',   color: '#15803d' },
+    { id: 'carddeposit',  icon: '💳', label: 'Card Deposit',      color: '#b45309' },
+    { id: 'checkdeposit', icon: '🖊', label: 'Check Deposit',     color: '#7e22ce' },
+    { id: 'alerts',       icon: '🔔', label: 'Alerts',            color: '#dc2626' },
+    { id: 'loans',        icon: '🏠', label: 'Loans',             color: '#065f46' },
+    { id: 'investment',   icon: '📈', label: 'Investment',        color: '#92400e' },
+    { id: 'support',      icon: '🎧', label: 'Support',           color: '#1e3a5f' },
   ];
 
   const tips = [
@@ -633,17 +667,17 @@ export default function DashboardPage() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {/* Profile */}
             <button onClick={() => setShowProfile(true)} style={{
               background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)',
               borderRadius: '50%', width: 40, height: 40, cursor: 'pointer', fontSize: 18,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
             }} title="View Profile">👤</button>
-            {/* Sign Out */}
             <button onClick={() => router.push('/')} style={{
               background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.25)',
               color: '#fff', padding: '8px 16px', borderRadius: 8, fontWeight: 700,
               fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap',
+              WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
             }}>Sign Out</button>
           </div>
         </div>
@@ -693,6 +727,7 @@ export default function DashboardPage() {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'transform 0.15s, box-shadow 0.15s',
                   opacity: id === 'beneficiary' ? 0.55 : 1,
+                  WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
                 }}
                 onMouseEnter={e => { if (id !== 'beneficiary') { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'; } }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
@@ -714,7 +749,6 @@ export default function DashboardPage() {
           }}>
             <div style={{ position: 'absolute', top: -28, right: -28, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
             <div style={{ position: 'absolute', bottom: -36, left: -16, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
-
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
               <div>
                 <div style={{ fontSize: 10, color: 'rgba(200,220,255,0.7)', letterSpacing: 3, textTransform: 'uppercase' }}>Liberty Banking</div>
@@ -722,7 +756,6 @@ export default function DashboardPage() {
               </div>
               <div style={{ fontSize: 28 }}>🏛</div>
             </div>
-
             <div style={{ width: 40, height: 28, background: 'linear-gradient(135deg, #d4af37, #f0d060)', borderRadius: 5, marginBottom: 18 }} />
             <div style={{ fontSize: 18, letterSpacing: 4, fontWeight: 700, marginBottom: 18, color: '#e0e8ff' }}>
               •••• &nbsp; •••• &nbsp; •••• &nbsp; {ACCOUNT.cardLast4}
@@ -761,12 +794,12 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── MODALS ─── */}
-      <TransferModal open={openModal === 'wire'}     onClose={close} title="Wire Transfer" />
-      <TransferModal open={openModal === 'local'}    onClose={close} title="Local Transfer" />
-      <TransferModal open={openModal === 'internal'} onClose={close} title="Internal Transfer" />
-      <PayBillsModal open={openModal === 'bills'}    onClose={close} />
-      <AlertsModal   open={openModal === 'alerts'}   onClose={close} />
-      <SupportModal  open={openModal === 'support'}  onClose={close} />
+      <TransferModal open={openModal === 'wire'}      onClose={close} title="Wire Transfer" />
+      <TransferModal open={openModal === 'local'}     onClose={close} title="Local Transfer" />
+      <TransferModal open={openModal === 'internal'}  onClose={close} title="Internal Transfer" />
+      <PayBillsModal open={openModal === 'bills'}     onClose={close} />
+      <AlertsModal   open={openModal === 'alerts'}    onClose={close} />
+      <SupportModal  open={openModal === 'support'}   onClose={close} />
 
       <GenericModal open={openModal === 'carddeposit'} onClose={close} title="Card Deposit" icon="💳"
         desc="Deposit funds instantly using your debit or credit card. Link your external card to Liberty Banking and transfer funds in seconds. Powered by Plaid®." />

@@ -88,13 +88,15 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Login button — always visible */}
+            {/* Login button — always visible, mobile-safe */}
             <button
               onClick={() => setShowLogin(true)}
               style={{
                 background: '#d4af37', color: '#0a2240', padding: '10px 24px',
                 border: 'none', borderRadius: 8, fontWeight: 800, fontSize: 14,
                 cursor: 'pointer', letterSpacing: 1, whiteSpace: 'nowrap',
+                WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
+                position: 'relative', zIndex: 10,
               }}
             >Login</button>
           </div>
@@ -240,6 +242,7 @@ export default function HomePage() {
               background: '#d4af37', color: '#0a2240', padding: '15px 32px',
               border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 15,
               cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+              WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
             }}>
               Access Online Banking →
             </button>
@@ -408,55 +411,29 @@ export default function HomePage() {
 
       {/* ─── DIGITAL BANKING HIGHLIGHT ─── */}
       <section className="lb-section" style={{ padding: '88px 32px', background: '#fff' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className="lb-digital-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center' }}>
-            <div>
-              <div style={{ color: '#d4af37', fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', fontSize: 12, marginBottom: 12 }}>Digital Banking</div>
-              <h2 style={{ fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 800, color: '#0a2240', margin: '0 0 20px', lineHeight: 1.2 }}>
-                Your Bank, Everywhere You Go
-              </h2>
-              <p style={{ color: '#555', lineHeight: 1.9, marginBottom: 28, fontSize: 15 }}>
-                Experience the future of banking with our state-of-the-art online platform. Transfer funds, pay bills, and manage your wealth — all from your device, 24/7.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {['Instant wire, local & internal transfers', 'Bill payment & management', 'Loan applications & management', 'Real-time alerts & notifications', 'Secure investment portal'].map(item => (
-                  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ color: '#d4af37', fontSize: 18 }}>✓</span>
-                    <span style={{ color: '#444', fontSize: 15 }}>{item}</span>
-                  </div>
-                ))}
+        <div style={{ maxWidth: 780, margin: '0 auto' }}>
+          <div style={{ color: '#d4af37', fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', fontSize: 12, marginBottom: 12 }}>Digital Banking</div>
+          <h2 style={{ fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 800, color: '#0a2240', margin: '0 0 20px', lineHeight: 1.2 }}>
+            Your Bank, Everywhere You Go
+          </h2>
+          <p style={{ color: '#555', lineHeight: 1.9, marginBottom: 32, fontSize: 15 }}>
+            Experience the future of banking with our state-of-the-art online platform. Transfer funds, pay bills, and manage your wealth — all from your device, 24/7.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 40px', marginBottom: 36 }}>
+            {['Instant wire, local & internal transfers', 'Bill payment & management', 'Loan applications & management', 'Real-time alerts & notifications', 'Secure investment portal', '24/7 account access'].map(item => (
+              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ color: '#d4af37', fontSize: 18, flexShrink: 0 }}>✓</span>
+                <span style={{ color: '#444', fontSize: 15 }}>{item}</span>
               </div>
-              <button onClick={() => setShowLogin(true)} style={{
-                marginTop: 32, background: '#0a2240', color: '#fff', padding: '15px 32px',
-                border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 15, cursor: 'pointer',
-              }}>
-                Get Started Today →
-              </button>
-            </div>
-
-            {/* Mock dashboard card */}
-            <div style={{ background: 'linear-gradient(135deg, #0a2240 0%, #1a4080 100%)', borderRadius: 24, padding: 36, boxShadow: '0 20px 60px rgba(10,34,64,0.35)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, color: '#fff' }}>
-                <div>
-                  <div style={{ fontSize: 10, color: 'rgba(200,220,255,0.7)', letterSpacing: 2, textTransform: 'uppercase' }}>Liberty Banking</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, marginTop: 4 }}>Online Portal</div>
-                </div>
-                <div style={{ fontSize: 28 }}>🏛</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 14, padding: 22, marginBottom: 18, color: '#fff' }}>
-                <div style={{ fontSize: 11, color: 'rgba(200,220,255,0.7)', marginBottom: 6 }}>Checkings Balance</div>
-                <div style={{ fontSize: 36, fontWeight: 900, color: '#d4af37' }}>$4,000.00</div>
-                <div style={{ fontSize: 13, color: 'rgba(200,220,255,0.8)', marginTop: 8, letterSpacing: 3 }}>•••• •••• •••• 8750</div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {['Wire Transfer', 'Pay Bills', 'Investments', 'Support'].map(item => (
-                  <div key={item} style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '12px', textAlign: 'center', color: 'rgba(220,235,255,0.9)', fontSize: 13, fontWeight: 600 }}>
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
+          <button onClick={() => setShowLogin(true)} style={{
+            background: '#0a2240', color: '#fff', padding: '15px 36px',
+            border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 15, cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
+          }}>
+            Get Started Today →
+          </button>
         </div>
       </section>
 
