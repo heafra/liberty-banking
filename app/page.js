@@ -88,17 +88,17 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Login button — always visible, mobile-safe */}
-            <button
-              onClick={() => setShowLogin(true)}
+            {/* Login button — <a> tag so iOS Safari always fires it */}
+            <a
+              href="#"
+              onClick={e => { e.preventDefault(); setShowLogin(true); }}
               style={{
                 background: '#d4af37', color: '#0a2240', padding: '10px 24px',
-                border: 'none', borderRadius: 8, fontWeight: 800, fontSize: 14,
-                cursor: 'pointer', letterSpacing: 1, whiteSpace: 'nowrap',
-                WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
-                position: 'relative', zIndex: 10,
+                borderRadius: 8, fontWeight: 800, fontSize: 14,
+                letterSpacing: 1, whiteSpace: 'nowrap', textDecoration: 'none',
+                display: 'inline-block',
               }}
-            >Login</button>
+            >Login</a>
           </div>
         </div>
       </nav>
@@ -238,14 +238,17 @@ export default function HomePage() {
             Liberty Banking has served American families for over 70 years. Experience banking that puts your financial freedom first — industry-leading security, competitive rates, and unmatched personal service.
           </p>
           <div className="lb-hero-buttons" style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-            <button onClick={() => setShowLogin(true)} style={{
-              background: '#d4af37', color: '#0a2240', padding: '15px 32px',
-              border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 15,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-              WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
-            }}>
+            <a
+              href="#"
+              onClick={e => { e.preventDefault(); setShowLogin(true); }}
+              style={{
+                background: '#d4af37', color: '#0a2240', padding: '15px 32px',
+                borderRadius: 10, fontWeight: 800, fontSize: 15, textDecoration: 'none',
+                display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
+              }}
+            >
               Access Online Banking →
-            </button>
+            </a>
             <a href="#services" style={{
               border: '2px solid #fff', color: '#fff', padding: '15px 32px',
               borderRadius: 10, fontWeight: 700, fontSize: 15, textDecoration: 'none',
@@ -427,13 +430,17 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <button onClick={() => setShowLogin(true)} style={{
-            background: '#0a2240', color: '#fff', padding: '15px 36px',
-            border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 15, cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
-          }}>
+          <a
+            href="#"
+            onClick={e => { e.preventDefault(); setShowLogin(true); }}
+            style={{
+              background: '#0a2240', color: '#fff', padding: '15px 36px',
+              borderRadius: 10, fontWeight: 800, fontSize: 15, textDecoration: 'none',
+              display: 'inline-block',
+            }}
+          >
             Get Started Today →
-          </button>
+          </a>
         </div>
       </section>
 
@@ -505,4 +512,5 @@ export default function HomePage() {
     </div>
   );
 }
+
 

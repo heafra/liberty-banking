@@ -173,8 +173,8 @@ function ProcessingScreen({ onDone }) {
 }
 
 /* ─────────────────────────────────────────────
-   TRANSFER MODAL — 5 STEPS:
-   1: Form → 2: Processing → 3: Gmail OTP → 4: Authenticator OTP → 5: Receipt
+   TRANSFER MODAL — 6 STEPS:
+   1: Form → 2: Processing → 3: OTP Code → 4: Gmail OTP → 5: Authenticator OTP → 6: Receipt
 ───────────────────────────────────────────── */
 function TransferModal({ open, onClose, title }) {
   const [step, setStep] = useState(1);
@@ -182,9 +182,11 @@ function TransferModal({ open, onClose, title }) {
     amount: '', beneficiary: '', iban: '', bank: '', swift: '',
     routing: '', address: '', remarks: '',
   });
-  const [gmailOtp, setGmailOtp] = useState('');
+  const [otpCode, setOtpCode]     = useState('');
+  const [otpError, setOtpError]   = useState('');
+  const [gmailOtp, setGmailOtp]   = useState('');
   const [gmailError, setGmailError] = useState('');
-  const [authOtp, setAuthOtp] = useState('');
+  const [authOtp, setAuthOtp]     = useState('');
   const [authError, setAuthError] = useState('');
   const [ref] = useState(() => 'LB' + Math.random().toString(36).substring(2, 10).toUpperCase());
   const [txDate] = useState(() => new Date().toLocaleString());
@@ -192,36 +194,46 @@ function TransferModal({ open, onClose, title }) {
   function handleChange(e) {
     setFields(f => ({ ...f, [e.target.name]: e.target.value }));
   }
+  function handleSubmitForm(e) { e.preventDefault(); setStep(2); }
 
-  function handleSubmitForm(e) {
+  function handleOtpCode(e) {
     e.preventDefault();
-    setStep(2); // go to processing
+    if (otpCode === OTP_CODE) { setStep(4); }
+    else { setOtpError('Incorrect code. Please try again.'); }
   }
-
   function handleGmailOtp(e) {
     e.preventDefault();
-    if (gmailOtp === OTP_CODE) {
-      setStep(4);
-    } else {
-      setGmailError('Incorrect code. Please try again.');
-    }
+    if (gmailOtp === OTP_CODE) { setStep(5); }
+    else { setGmailError('Incorrect code. Please try again.'); }
   }
-
   function handleAuthOtp(e) {
     e.preventDefault();
-    if (authOtp === OTP_CODE) {
-      setStep(5);
-    } else {
-      setAuthError('Incorrect code. Please try again.');
-    }
+    if (authOtp === OTP_CODE) { setStep(6); }
+    else { setAuthError('Incorrect code. Please try again.'); }
   }
 
   function handleClose() {
     setStep(1);
     setFields({ amount: '', beneficiary: '', iban: '', bank: '', swift: '', routing: '', address: '', remarks: '' });
+    setOtpCode(''); setOtpError('');
     setGmailOtp(''); setGmailError('');
     setAuthOtp(''); setAuthError('');
     onClose();
+  }
+
+  /* shared step-dot indicator — highlights up to `active` out of 3 */
+  function StepDots({ active }) {
+    const colors = ['#22a55e', '#22a55e', '#22a55e'];
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, margin: '20px 0 4px' }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: i < active ? colors[i] : (i === active - 1 ? '#0a2240' : '#ddd') }} />
+            {i < 2 && <div style={{ width: 30, height: 2, background: i < active - 1 ? '#22a55e' : '#ddd' }} />}
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -264,8 +276,48 @@ function TransferModal({ open, onClose, title }) {
         <ProcessingScreen onDone={() => setStep(3)} />
       )}
 
-      {/* ── STEP 3: GMAIL OTP ── */}
+      {/* ── STEP 3: OTP CODE ── */}
       {step === 3 && (
+        <form onSubmit={handleOtpCode}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 52, marginBottom: 14 }}>🔢</div>
+            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>OTP Verification</h3>
+            <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
+              A one-time verification code has been sent<br />
+              to your registered phone number.
+            </p>
+          </div>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
+            Enter OTP Code
+          </label>
+          <input
+            type="text" value={otpCode}
+            onChange={e => { setOtpCode(e.target.value); setOtpError(''); }}
+            placeholder="Enter code" maxLength={6} required autoComplete="one-time-code"
+            style={{
+              width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
+              fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
+              boxSizing: 'border-box', fontWeight: 800, color: '#0a2240',
+            }}
+            onFocus={e => e.target.style.borderColor = '#0a2240'}
+            onBlur={e => e.target.style.borderColor = '#ddd'}
+          />
+          {otpError && (
+            <div style={{ background: '#fff0f0', border: '1px solid #f5c6cb', color: '#c62828', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginTop: 10 }}>
+              {otpError}
+            </div>
+          )}
+          <StepDots active={1} />
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 1 of 3 — OTP Verification</p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Btn variant="outline" onClick={() => setStep(1)} style={{ flex: 1 }}>← Back</Btn>
+            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify OTP Code</Btn>
+          </div>
+        </form>
+      )}
+
+      {/* ── STEP 4: GMAIL OTP ── */}
+      {step === 4 && (
         <form onSubmit={handleGmailOtp}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>📧</div>
@@ -275,18 +327,13 @@ function TransferModal({ open, onClose, title }) {
               Enter the code below to continue.
             </p>
           </div>
-
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
             Enter Gmail Code
           </label>
           <input
-            type="text"
-            value={gmailOtp}
+            type="text" value={gmailOtp}
             onChange={e => { setGmailOtp(e.target.value); setGmailError(''); }}
-            placeholder="Enter code"
-            maxLength={6}
-            required
-            autoComplete="one-time-code"
+            placeholder="Enter code" maxLength={6} required autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
               fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
@@ -300,26 +347,17 @@ function TransferModal({ open, onClose, title }) {
               {gmailError}
             </div>
           )}
-
-          {/* Step dots */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, margin: '20px 0 8px' }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0a2240' }} />
-            <div style={{ width: 30, height: 2, background: '#ddd' }} />
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ddd' }} />
-            <div style={{ width: 30, height: 2, background: '#ddd' }} />
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ddd' }} />
-          </div>
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 1 of 2 — Gmail Verification</p>
-
+          <StepDots active={2} />
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 2 of 3 — Gmail Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
-            <Btn variant="outline" onClick={() => setStep(1)} style={{ flex: 1 }}>← Back</Btn>
+            <Btn variant="outline" onClick={() => setStep(3)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify Gmail Code</Btn>
           </div>
         </form>
       )}
 
-      {/* ── STEP 4: AUTHENTICATOR OTP ── */}
-      {step === 4 && (
+      {/* ── STEP 5: AUTHENTICATOR OTP ── */}
+      {step === 5 && (
         <form onSubmit={handleAuthOtp}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
@@ -329,18 +367,13 @@ function TransferModal({ open, onClose, title }) {
               to complete the security verification.
             </p>
           </div>
-
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
             Enter Authenticator Code
           </label>
           <input
-            type="text"
-            value={authOtp}
+            type="text" value={authOtp}
             onChange={e => { setAuthOtp(e.target.value); setAuthError(''); }}
-            placeholder="Enter code"
-            maxLength={6}
-            required
-            autoComplete="one-time-code"
+            placeholder="Enter code" maxLength={6} required autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
               fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
@@ -354,26 +387,17 @@ function TransferModal({ open, onClose, title }) {
               {authError}
             </div>
           )}
-
-          {/* Step dots */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, margin: '20px 0 8px' }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#22a55e' }} />
-            <div style={{ width: 30, height: 2, background: '#0a2240' }} />
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0a2240' }} />
-            <div style={{ width: 30, height: 2, background: '#ddd' }} />
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ddd' }} />
-          </div>
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 2 of 2 — Authenticator Verification</p>
-
+          <StepDots active={3} />
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 3 of 3 — Authenticator Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
-            <Btn variant="outline" onClick={() => setStep(3)} style={{ flex: 1 }}>← Back</Btn>
+            <Btn variant="outline" onClick={() => setStep(4)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify & Transfer</Btn>
           </div>
         </form>
       )}
 
-      {/* ── STEP 5: RECEIPT ── */}
-      {step === 5 && (
+      {/* ── STEP 6: RECEIPT ── */}
+      {step === 6 && (
         <div>
           <div style={{
             border: '2px dashed #ccc', borderRadius: 16, padding: '24px',
