@@ -155,7 +155,7 @@ export default function HomePage() {
                   required
                   style={{
                     width: '100%', padding: '12px 14px 12px 44px', border: '1.5px solid #ddd',
-                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box',
+                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box', color: '#000'
                   }}
                   onFocus={e => e.target.style.borderColor = '#0a2240'}
                   onBlur={e => e.target.style.borderColor = '#ddd'}
@@ -179,7 +179,7 @@ export default function HomePage() {
                   required
                   style={{
                     width: '100%', padding: '12px 14px 12px 44px', border: '1.5px solid #ddd',
-                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box',
+                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box', color: '#000'
                   }}
                   onFocus={e => e.target.style.borderColor = '#0a2240'}
                   onBlur={e => e.target.style.borderColor = '#ddd'}

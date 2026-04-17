@@ -87,16 +87,28 @@ function Btn({ children, onClick, style: s, variant = 'primary', type = 'button'
 function InputRow({ icon, label, name, placeholder, type = 'text', optional, value, onChange }) {
   return (
     <div style={{ marginBottom: 16 }}>
+      
       <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 5 }}>
-        {label}{optional && <span style={{ color: '#999', fontWeight: 400, marginLeft: 4 }}>(Optional)</span>}
+        {label}
+        {optional && <span style={{ color: '#999', fontWeight: 400, marginLeft: 4 }}>(Optional)</span>}
       </label>
+
       <div style={{ position: 'relative' }}>
+        
         {icon && (
           <span style={{
-            position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)',
-            fontSize: 17, opacity: 0.5, pointerEvents: 'none',
-          }}>{icon}</span>
+            position: 'absolute',
+            left: 13,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: 17,
+            opacity: 0.5,
+            pointerEvents: 'none',
+          }}>
+            {icon}
+          </span>
         )}
+
         <input
           type={type}
           name={name}
@@ -105,18 +117,27 @@ function InputRow({ icon, label, name, placeholder, type = 'text', optional, val
           placeholder={placeholder}
           required={!optional}
           style={{
-            width: '100%', padding: `11px 12px 11px ${icon ? '42px' : '12px'}`,
-            border: '1.5px solid #ddd', borderRadius: 10, fontSize: 14,
-            outline: 'none', boxSizing: 'border-box',
+            width: '100%',
+            padding: `11px 12px 11px ${icon ? '42px' : '12px'}`,
+            border: '1.5px solid #ddd',
+            borderRadius: 10,
+            fontSize: 14,
+            outline: 'none',
+            boxSizing: 'border-box',
+
+            // ✅ FIX ADDED (DO NOT REMOVE)
+            color: '#000',
+            WebkitTextFillColor: '#000',
+            backgroundColor: '#fff'
           }}
           onFocus={e => e.target.style.borderColor = '#0a2240'}
           onBlur={e => e.target.style.borderColor = '#ddd'}
         />
+
       </div>
     </div>
   );
 }
-
 /* ─────────────────────────────────────────────
    PROCESSING SCREEN
 ───────────────────────────────────────────── */
@@ -244,24 +265,24 @@ function TransferModal({ open, onClose, title }) {
         <form onSubmit={handleSubmitForm}>
           <div className="db-transfer-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 18px' }}>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="💰" label="Amount" name="amount" placeholder="Enter amount (e.g. 500.00)" type="number" value={fields.amount} onChange={handleChange} />
+              <InputRow icon="$" label="Amount" name="amount" placeholder="Enter amount (e.g. 500.00)" type="number" value={fields.amount} onChange={handleChange}  />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="👤" label="Beneficiary Name" name="beneficiary" placeholder="Full name of recipient" value={fields.beneficiary} onChange={handleChange} />
+              <InputRow icon="👤" label="Beneficiary Name" name="beneficiary" placeholder="Full name of recipient" value={fields.beneficiary} onChange={handleChange}  />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="🏦" label="IBAN / Account Number" name="iban" placeholder="Enter IBAN or account number" value={fields.iban} onChange={handleChange} />
+              <InputRow icon="🏦" label="IBAN / Account Number" name="iban" placeholder="Enter IBAN or account number" value={fields.iban} onChange={handleChange}  />
             </div>
             <InputRow icon="🏢" label="Bank" name="bank" placeholder="Recipient's bank name" value={fields.bank} onChange={handleChange} />
             <InputRow icon="🔑" label="SWIFT Code" name="swift" placeholder="e.g. CHASEUS33" value={fields.swift} onChange={handleChange} />
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange} />
+              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange}  />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="📍" label="Bank Address" name="address" placeholder="Street, City, State, ZIP" optional value={fields.address} onChange={handleChange} />
+              <InputRow icon="📍" label="Bank Address" name="address" placeholder="Street, City, State, ZIP" optional value={fields.address} onChange={handleChange}  />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="📝" label="Remarks" name="remarks" placeholder="Add a note for the recipient" optional value={fields.remarks} onChange={handleChange} />
+              <InputRow icon="📝" label="Remarks" name="remarks" placeholder="Add a note for the recipient" optional value={fields.remarks} onChange={handleChange}  />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
@@ -280,15 +301,15 @@ function TransferModal({ open, onClose, title }) {
       {step === 3 && (
         <form onSubmit={handleOtpCode}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: 52, marginBottom: 14 }}>🔢</div>
-            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>OTP Verification</h3>
+            <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
+            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>COT CODE Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              A one-time verification code has been sent<br />
-              to your registered phone number.
+              Insert your COT Code to continue this transaction.<br />
+              Kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
-            Enter OTP Code
+            Enter COT Code
           </label>
           <input
             type="text" value={otpCode}
@@ -308,10 +329,10 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
           <StepDots active={1} />
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 1 of 3 — OTP Verification</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>COT Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(1)} style={{ flex: 1 }}>← Back</Btn>
-            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify OTP Code</Btn>
+            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify COT Code</Btn>
           </div>
         </form>
       )}
@@ -320,15 +341,15 @@ function TransferModal({ open, onClose, title }) {
       {step === 4 && (
         <form onSubmit={handleGmailOtp}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: 52, marginBottom: 14 }}>📧</div>
-            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>Gmail Verification</h3>
+            <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
+            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>TAX Code Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              A verification code has been sent to your Gmail address.<br />
-              Enter the code below to continue.
+              Insert your TAX Code to continue this transaction.<br />
+              If you do not know your code,kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
-            Enter Gmail Code
+            Enter TAX Code
           </label>
           <input
             type="text" value={gmailOtp}
@@ -348,10 +369,10 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
           <StepDots active={2} />
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 2 of 3 — Gmail Verification</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>TAX Code Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(3)} style={{ flex: 1 }}>← Back</Btn>
-            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify Gmail Code</Btn>
+            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify TAX Code</Btn>
           </div>
         </form>
       )}
@@ -361,14 +382,14 @@ function TransferModal({ open, onClose, title }) {
         <form onSubmit={handleAuthOtp}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
-            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>Authenticator Verification</h3>
+            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>IMF Code Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              Enter the code from your Authenticator app<br />
-              to complete the security verification.
+              Insert your IMF Code to continue this transaction.<br />
+              If you do not know your code, Kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
-            Enter Authenticator Code
+            Enter IMF Code
           </label>
           <input
             type="text" value={authOtp}
@@ -388,7 +409,7 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
           <StepDots active={3} />
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Step 3 of 3 — Authenticator Verification</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>IMF Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(4)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify & Transfer</Btn>
@@ -728,12 +749,12 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="db-balance-right" style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 11, color: 'rgba(200,220,255,0.6)', marginBottom: 4 }}>Available Balance</div>
-            <div style={{ fontSize: 24, fontWeight: 800 }}>$4,000.00</div>
+            <div style={{ fontSize: 11, color: 'rgba(200,220,255,0.6)', marginBottom: 4 }}></div>
+            <div style={{ fontSize: 24, fontWeight: 800 }}></div>
             <div style={{
               marginTop: 10, background: 'rgba(212,175,55,0.2)', border: '1px solid #d4af37',
               color: '#d4af37', padding: '5px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, display: 'inline-block',
-            }}>✅ Account Active</div>
+            }}>Available balance</div>
           </div>
         </div>
 
