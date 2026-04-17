@@ -1,241 +1,278 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Dashboard() {
-  const [view, setView] = useState("home");
-  const [modal, setModal] = useState(null);
-  const [processing, setProcessing] = useState(false);
-  const [otpStep, setOtpStep] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [activeModal, setActiveModal] = useState(null);
+  const [step, setStep] = useState("form");
+  const [otp, setOtp] = useState("");
   const [receipt, setReceipt] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ NEW
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  // ✅ FIXED AUTH CHECK
-  useEffect(() => {
-    const checkAuth = () => {
-      const loggedIn = localStorage.getItem("loggedIn");
-
-      if (!loggedIn) {
-        window.location.href = "/";
-      } else {
-        setLoading(false);
-      }
-    };
-
-    setTimeout(checkAuth, 100); // 👈 prevents instant redirect bug
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.placeholder]: e.target.value });
+  const account = {
+    balance: 4000.0,
+    card: "•••• 3846",
   };
 
-  const handleProceed = () => {
-    if (modal === "wire") {
-      setProcessing(true);
+  const [amount, setAmount] = useState("");
 
-      setTimeout(() => {
-        setProcessing(false);
-        setOtpStep(true);
-      }, 2000);
-    } else {
-      alert("This service is currently unavailable. Contact support.");
-      setModal(null);
-    }
+  const actions = [
+    "Wire Transfer",
+    "Local Transfer",
+    "Internal Transfer",
+    "Buy Crypto",
+    "Pay Bills",
+    "Add Beneficiary",
+    "Alerts",
+    "Support",
+  ];
+
+  const isTransfer =
+    activeModal === "Wire Transfer" ||
+    activeModal === "Local Transfer" ||
+    activeModal === "Internal Transfer";
+
+  const openAction = (item) => {
+    setActiveModal(item);
+    setStep("form");
+    setOtp("");
+    setReceipt(null);
   };
 
-  const verifyOtp = (val) => {
-    if (val === "1234") {
-      setOtpStep(false);
+  const proceed = () => {
+    setStep("processing");
 
+    setTimeout(() => {
+      setStep("otp");
+    }, 1800);
+  };
+
+  const verifyOtp = () => {
+    if (otp === "1234") {
+      setStep("receipt");
       setReceipt({
-        ...formData,
         ref: "TXN" + Math.floor(Math.random() * 999999),
-        date: new Date().toLocaleString(),
-        status: "Successful"
+        status: "Successful",
+        amount,
       });
+    } else {
+      alert("Invalid OTP");
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("loggedIn");
-    window.location.href = "/";
+  const finalContinue = () => {
+    setStep("notavailable");
+  };
+
+  const reset = () => {
+    setActiveModal(null);
+    setStep("form");
+    setOtp("");
+    setReceipt(null);
+    setAmount("");
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-24">
+    <div className="min-h-screen bg-gray-100">
 
-      {/* TOP */}
-      <div className="bg-orange-900 text-white p-4 flex justify-between">
-        <h1>Liberty Banking</h1>
-        <button onClick={() => setModal("profile")} className="text-2xl">👤</button>
-      </div>
+      {/* TOP BAR */}
+      <div className="bg-white shadow-sm px-4 py-3 flex justify-between items-center">
 
-      {/* HOME */}
-      {view === "home" && (
         <div>
-          <div className="bg-orange-700 text-white m-4 p-6 rounded-2xl">
-            <p>CHECKINGS ACCOUNT</p>
-            <h2 className="text-3xl font-bold">$4,000.00</h2>
+          <h1 className="font-semibold text-blue-950">Liberty Banking</h1>
+          <p className="text-xs text-gray-500">Secure Digital Banking</p>
+        </div>
+
+        {/* PROFILE */}
+        <div className="relative">
+          <div
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="w-10 h-10 rounded-full bg-blue-900 text-white flex items-center justify-center cursor-pointer"
+          >
+            👤
           </div>
 
-          <div className="grid grid-cols-3 gap-4 px-4">
-            {[
-              "wire",
-              "local",
-              "internal",
-              "crypto",
-              "bills",
-              "beneficiary",
-              "alerts",
-              "settings",
-              "support"
-            ].map((item) => (
-              <div
-                key={item}
-                onClick={() => setModal(item)}
-                className="bg-white p-4 rounded-xl text-center shadow cursor-pointer capitalize"
-              >
-                {item}
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-60 bg-white shadow-lg rounded-lg p-3 text-sm">
+
+              <p className="font-semibold">Management Desk</p>
+              <p className="text-gray-600">Checking Balance: $4000.00</p>
+              <p className="text-gray-600">Card: {account.card}</p>
+
+              <div className="border-t mt-2 pt-2">
+                <p className="px-2 py-1 hover:bg-gray-100">Profile</p>
+                <p className="px-2 py-1 hover:bg-gray-100">Logout</p>
               </div>
-            ))}
-          </div>
+
+            </div>
+          )}
         </div>
-      )}
-
-      {/* MODALS */}
-      {modal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-[95%] max-w-md space-y-2">
-
-            {modal === "profile" && (
-              <>
-                <h2 className="font-bold">My Profile</h2>
-                <p>Checkings Account</p>
-                <p className="font-bold">$4,000.00</p>
-              </>
-            )}
-
-            {modal === "wire" && (
-              <>
-                {[
-                  "From",
-                  "Enter Amount $",
-                  "Beneficiary Name",
-                  "IBAN/Account Number",
-                  "Bank",
-                  "Swift Code",
-                  "Routing Transit Number",
-                  "PIN",
-                  "Bank Address (Optional)",
-                  "Remarks"
-                ].map((p, i) => (
-                  <input key={i} placeholder={p} className="w-full border-b p-2" onChange={handleChange}/>
-                ))}
-              </>
-            )}
-
-            {["local","internal"].includes(modal) && (
-              <>
-                {[
-                  "Enter Amount $",
-                  "Beneficiary Name",
-                  "IBAN/Account Number",
-                  "Bank",
-                  "Routing Transit Number",
-                  "Bank Address (Optional)",
-                  "Remarks",
-                  "PIN"
-                ].map((p, i) => (
-                  <input key={i} placeholder={p} className="w-full border-b p-2" onChange={handleChange}/>
-                ))}
-              </>
-            )}
-
-            {modal === "crypto" && (
-              <>
-                {["Amount","Wallet","Receive","Card Number","Expiry Date"].map((p,i)=>(
-                  <input key={i} placeholder={p} className="w-full border-b p-2" onChange={handleChange}/>
-                ))}
-              </>
-            )}
-
-            {modal === "bills" && (
-              <>
-                <p>Plane Tickets</p>
-                <p>Hotel Booking</p>
-              </>
-            )}
-
-            {["alerts","settings","support","beneficiary"].includes(modal) && (
-              <p>This feature is currently unavailable.</p>
-            )}
-
-            {modal !== "profile" && (
-              <button onClick={handleProceed} className="w-full bg-orange-700 text-white p-2 mt-2 rounded">
-                Proceed
-              </button>
-            )}
-
-            <button onClick={() => setModal(null)} className="text-sm text-gray-500">
-              Close
-            </button>
-
-          </div>
-        </div>
-      )}
-
-      {/* PROCESSING */}
-      {processing && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 text-white">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-2">Processing transfer...</p>
-          </div>
-        </div>
-      )}
-
-      {/* OTP */}
-      {otpStep && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60">
-          <div className="bg-white p-6 rounded text-center">
-            <p>Enter OTP (1234)</p>
-            <input onChange={(e) => verifyOtp(e.target.value)} className="border p-2 mt-2 text-center"/>
-          </div>
-        </div>
-      )}
-
-      {/* RECEIPT */}
-      {receipt && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60">
-          <div className="bg-white p-6 rounded w-[90%] max-w-md">
-            <h2 className="font-bold mb-2">Transaction Receipt</h2>
-            {Object.entries(receipt).map(([k,v]) => (
-              <p key={k}><strong>{k}:</strong> {v}</p>
-            ))}
-            <button onClick={() => setReceipt(null)} className="mt-3 bg-orange-700 text-white p-2 w-full">
-              Done
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* NAV */}
-      <div className="fixed bottom-0 w-full bg-white border-t flex justify-around p-3">
-        <button onClick={() => setView("home")}>Home</button>
-        <button onClick={() => alert("Notification Center")}>Notifications</button>
-        <button onClick={() => setModal("profile")}>Settings</button>
-        <button onClick={() => alert("Support Ticket")}>Support</button>
-        <button onClick={logout}>Logout</button>
       </div>
+
+      {/* ACCOUNT CARD */}
+      <div className="px-4 pt-4">
+        <div className="bg-gradient-to-r from-blue-950 to-blue-800 text-white p-6 rounded-2xl">
+          <p className="text-sm opacity-80">Checkings Account</p>
+          <h2 className="text-3xl font-bold mt-2">$4000.00</h2>
+          <p className="text-sm opacity-70 mt-1">{account.card}</p>
+        </div>
+      </div>
+
+      {/* QUICK ACTIONS */}
+      <div className="p-4 grid grid-cols-2 gap-3">
+        {actions.map((a) => (
+          <button
+            key={a}
+            onClick={() => openAction(a)}
+            className="bg-white p-4 rounded-xl shadow text-left"
+          >
+            ⚡ {a}
+          </button>
+        ))}
+      </div>
+
+      {/* 🔵 NEW: INFO TIPS SECTION */}
+      <div className="px-4 pb-6 space-y-3">
+
+        <div className="bg-white p-4 rounded-xl shadow flex gap-3 items-start">
+          <span className="text-xl">💾</span>
+          <div>
+            <p className="font-semibold">Autosave</p>
+            <p className="text-sm text-gray-600">
+              Set a goal, save automatically with Liberty Banking's Auto Save and track your progress.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow flex gap-3 items-start">
+          <span className="text-xl">📊</span>
+          <div>
+            <p className="font-semibold">Budget</p>
+            <p className="text-sm text-gray-600">
+              Check in with your budget and stay on top of your spending.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow flex gap-3 items-start">
+          <span className="text-xl">🏠</span>
+          <div>
+            <p className="font-semibold">Home Option</p>
+            <p className="text-sm text-gray-600">
+              Your home purchase, refinance and insights right under one roof.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow flex gap-3 items-start">
+          <span className="text-xl">🔐</span>
+          <div>
+            <p className="font-semibold">Security Tip</p>
+            <p className="text-sm text-gray-600">
+              We will NEVER ask you to provide your security details such as OTPs, PINs or sensitive account codes.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* MODAL */}
+      {activeModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-end justify-center">
+
+          <div className="bg-white w-full md:w-[420px] p-5 rounded-t-2xl">
+
+            <div className="flex justify-between mb-3">
+              <h2 className="font-semibold">{activeModal}</h2>
+              <button onClick={reset}>✕</button>
+            </div>
+
+            {/* TRANSFER FLOW */}
+            {isTransfer && step === "form" && (
+              <div className="space-y-2 text-sm">
+
+                <div className="flex items-center border p-2 rounded">
+                  <span className="mr-2">$</span>
+                  <input
+                    className="w-full outline-none"
+                    placeholder="Enter Amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </div>
+
+                <input className="w-full border p-2 rounded" placeholder="Beneficiary Name" />
+                <input className="w-full border p-2 rounded" placeholder="IBAN / Account Number" />
+                <input className="w-full border p-2 rounded" placeholder="Bank Name" />
+                <input className="w-full border p-2 rounded" placeholder="Swift Code" />
+                <input className="w-full border p-2 rounded" placeholder="Routing Transit Number" />
+                <input className="w-full border p-2 rounded" placeholder="Bank Address (Optional)" />
+                <input className="w-full border p-2 rounded" placeholder="Remarks" />
+
+                <button onClick={proceed} className="w-full bg-blue-950 text-white py-2 rounded">
+                  Continue
+                </button>
+              </div>
+            )}
+
+            {/* NON-TRANSFER FORM */}
+            {!isTransfer && step === "form" && (
+              <div className="space-y-2 text-sm">
+
+                <input className="w-full border p-2 rounded" placeholder="Enter Amount" />
+                <input className="w-full border p-2 rounded" placeholder="Details" />
+
+                <button onClick={finalContinue} className="w-full bg-blue-950 text-white py-2 rounded">
+                  Continue
+                </button>
+
+              </div>
+            )}
+
+            {/* NOT AVAILABLE */}
+            {step === "notavailable" && (
+              <div className="text-center py-10 text-gray-600">
+                Not available at the moment
+              </div>
+            )}
+
+            {/* PROCESSING */}
+            {step === "processing" && (
+              <div className="text-center py-10">
+                <div className="w-10 h-10 border-4 border-blue-900 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="mt-2">Processing...</p>
+              </div>
+            )}
+
+            {/* OTP */}
+            {step === "otp" && (
+              <div className="space-y-3">
+                <input
+                  className="w-full border p-2 rounded"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+
+                <button onClick={verifyOtp} className="w-full bg-blue-950 text-white py-2 rounded">
+                  Verify
+                </button>
+              </div>
+            )}
+
+            {/* RECEIPT */}
+            {step === "receipt" && (
+              <div className="text-sm">
+                <h3 className="font-semibold text-lg">Receipt</h3>
+                <p>Reference: {receipt?.ref}</p>
+                <p>Status: {receipt?.status}</p>
+                <p>Amount: ${receipt?.amount}</p>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
