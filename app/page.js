@@ -1,42 +1,14 @@
+
+
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ACCOUNTS = [
-  {
-    id: "9337910",
-    password: "mycheckings",
-    balance: "$4,000.00",
-    cardLast4: "8750",
-    fullCard: "**** **** **** 8750"
-  },
-  {
-    id: "7821945",
-    password: "savings123",
-    balance: "$9,250.50",
-    cardLast4: "4421",
-    fullCard: "**** **** **** 4421"
-  }
+  { id: '9337910',  password: 'mycheckings', balance: '$4,000.00',    cardLast4: '8750', fullCard: '**** **** **** 8750' },
+  { id: '9821625',  password: 'mycheckings', balance: '$350,000.00',  cardLast4: '4421', fullCard: '**** **** **** 4421' },
 ];
-
-function handleLogin(e) {
-  e.preventDefault();
-
-  const user = ACCOUNTS.find(
-    acc =>
-      acc.id.trim() === accountId.trim() &&
-      acc.password.trim() === password.trim()
-  );
-
-  if (!user) {
-    setError("Invalid Account ID or Password");
-    return;
-  }
-
-  localStorage.setItem("user", JSON.stringify(user));
-  router.push("/dashboard");
-}
 
 /* ─── MOBILE-RESPONSIVE STYLES ─── */
 const mobileStyles = `
@@ -66,15 +38,19 @@ const mobileStyles = `
 `;
 
 export default function HomePage() {
-  
+  const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false);
   const [accountId, setAccountId] = useState('');
-const [password, setPassword] = useState('');
-const [error, setError] = useState('');
-const router = useRouter();
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   function handleLogin(e) {
     e.preventDefault();
-    if (accountId === ACCOUNT_ID && password === PASSWORD) {
+    const user = ACCOUNTS.find(
+      acc => acc.id.trim() === accountId.trim() && acc.password.trim() === password.trim()
+    );
+    if (user) {
+      localStorage.setItem('lb_user', JSON.stringify(user));
       router.push('/dashboard');
     } else {
       setError('Invalid Account ID or Password. Please try again.');
@@ -187,7 +163,7 @@ const router = useRouter();
                   required
                   style={{
                     width: '100%', padding: '12px 14px 12px 44px', border: '1.5px solid #ddd',
-                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box', color: '#000'
+                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box', color: '#111',
                   }}
                   onFocus={e => e.target.style.borderColor = '#0a2240'}
                   onBlur={e => e.target.style.borderColor = '#ddd'}
@@ -211,7 +187,7 @@ const router = useRouter();
                   required
                   style={{
                     width: '100%', padding: '12px 14px 12px 44px', border: '1.5px solid #ddd',
-                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box', color: '#000'
+                    borderRadius: 10, fontSize: 15, outline: 'none', boxSizing: 'border-box', color: '#111',
                   }}
                   onFocus={e => e.target.style.borderColor = '#0a2240'}
                   onBlur={e => e.target.style.borderColor = '#ddd'}
