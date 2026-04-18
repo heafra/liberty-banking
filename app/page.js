@@ -3,8 +3,40 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const ACCOUNT_ID = '9337910';
-const PASSWORD = 'mycheckings';
+const ACCOUNTS = [
+  {
+    id: "9337910",
+    password: "mycheckings",
+    balance: "$4,000.00",
+    cardLast4: "8750",
+    fullCard: "**** **** **** 8750"
+  },
+  {
+    id: "7821945",
+    password: "savings123",
+    balance: "$9,250.50",
+    cardLast4: "4421",
+    fullCard: "**** **** **** 4421"
+  }
+];
+
+function handleLogin(e) {
+  e.preventDefault();
+
+  const user = ACCOUNTS.find(
+    acc =>
+      acc.id.trim() === accountId.trim() &&
+      acc.password.trim() === password.trim()
+  );
+
+  if (!user) {
+    setError("Invalid Account ID or Password");
+    return;
+  }
+
+  localStorage.setItem("user", JSON.stringify(user));
+  router.push("/dashboard");
+}
 
 /* ─── MOBILE-RESPONSIVE STYLES ─── */
 const mobileStyles = `
@@ -34,11 +66,11 @@ const mobileStyles = `
 `;
 
 export default function HomePage() {
-  const router = useRouter();
-  const [showLogin, setShowLogin] = useState(false);
+  
   const [accountId, setAccountId] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const [password, setPassword] = useState('');
+const [error, setError] = useState('');
+const router = useRouter();
 
   function handleLogin(e) {
     e.preventDefault();

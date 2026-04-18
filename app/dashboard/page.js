@@ -1,17 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
 
-/* ─────────────────────────────────────────────
-   ACCOUNT DATA
-───────────────────────────────────────────── */
-const ACCOUNT = {
-  name: 'Checkings Account',
-  balance: '$4,000.00',
-  cardLast4: '8750',
-  fullCard: '**** **** **** 8750',
-};
+export default function Dashboard() {
+  const [ACCOUNT, setACCOUNT] = useState(null);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+
+    if (raw) {
+      setACCOUNT(JSON.parse(raw));
+    }
+  }, []);
+
+  if (!ACCOUNT) {
+    return <div style={{ padding: 20 }}>No account found</div>;
+  }
+
+  return (
+    <div style={{ padding: 20 }}>
+      <div>{ACCOUNT.balance}</div>
+      <div>{ACCOUNT.fullCard}</div>
+    </div>
+  );
+}
 
 const OTP_CODE = '1234';
 
@@ -138,6 +150,7 @@ function InputRow({ icon, label, name, placeholder, type = 'text', optional, val
     </div>
   );
 }
+
 /* ─────────────────────────────────────────────
    PROCESSING SCREEN
 ───────────────────────────────────────────── */
@@ -265,24 +278,24 @@ function TransferModal({ open, onClose, title }) {
         <form onSubmit={handleSubmitForm}>
           <div className="db-transfer-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 18px' }}>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="$" label="Amount" name="amount" placeholder="Enter amount (e.g. 500.00)" type="number" value={fields.amount} onChange={handleChange}  />
+              <InputRow icon="💰" label="Amount($)" name="amount" placeholder="Enter amount (e.g. 500.00)" type="number" value={fields.amount} onChange={handleChange} />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="👤" label="Beneficiary Name" name="beneficiary" placeholder="Full name of recipient" value={fields.beneficiary} onChange={handleChange}  />
+              <InputRow icon="👤" label="Beneficiary Name" name="beneficiary" placeholder="Full name of recipient" value={fields.beneficiary} onChange={handleChange} />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="🏦" label="IBAN / Account Number" name="iban" placeholder="Enter IBAN or account number" value={fields.iban} onChange={handleChange}  />
+              <InputRow icon="🏦" label="IBAN / Account Number" name="iban" placeholder="Enter IBAN or account number" value={fields.iban} onChange={handleChange} />
             </div>
             <InputRow icon="🏢" label="Bank" name="bank" placeholder="Recipient's bank name" value={fields.bank} onChange={handleChange} />
             <InputRow icon="🔑" label="SWIFT Code" name="swift" placeholder="e.g. CHASEUS33" value={fields.swift} onChange={handleChange} />
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange}  />
+              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange} />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="📍" label="Bank Address" name="address" placeholder="Street, City, State, ZIP" optional value={fields.address} onChange={handleChange}  />
+              <InputRow icon="📍" label="Bank Address" name="address" placeholder="Street, City, State, ZIP" optional value={fields.address} onChange={handleChange} />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="📝" label="Remarks" name="remarks" placeholder="Add a note for the recipient" optional value={fields.remarks} onChange={handleChange}  />
+              <InputRow icon="📝" label="Remarks" name="remarks" placeholder="Add a note for the recipient" optional value={fields.remarks} onChange={handleChange} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
@@ -302,10 +315,10 @@ function TransferModal({ open, onClose, title }) {
         <form onSubmit={handleOtpCode}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
-            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>COT CODE Verification</h3>
+            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>COT Code Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              Insert your COT Code to continue this transaction.<br />
-              Kindly contact support.
+              Insert your COT Code to continue this transaction<br />
+              If you do not know your code,kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
@@ -329,7 +342,7 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
           <StepDots active={1} />
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>COT Verification</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>COT Code Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(1)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify COT Code</Btn>
@@ -344,12 +357,12 @@ function TransferModal({ open, onClose, title }) {
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
             <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>TAX Code Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              Insert your TAX Code to continue this transaction.<br />
+              Insert your TAX Code Verification to continue this transaction.<br />
               If you do not know your code,kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
-            Enter TAX Code
+            Enter TAX Code Verification
           </label>
           <input
             type="text" value={gmailOtp}
@@ -372,7 +385,7 @@ function TransferModal({ open, onClose, title }) {
           <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>TAX Code Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(3)} style={{ flex: 1 }}>← Back</Btn>
-            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify TAX Code</Btn>
+            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify Gmail Code</Btn>
           </div>
         </form>
       )}
@@ -384,12 +397,12 @@ function TransferModal({ open, onClose, title }) {
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
             <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>IMF Code Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              Insert your IMF Code to continue this transaction.<br />
-              If you do not know your code, Kindly contact support.
+              Insert your IMF Code to continue this transaction<br />
+              If you do not know your code, kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
-            Enter IMF Code
+            Enter IMF Code Verification
           </label>
           <input
             type="text" value={authOtp}
@@ -409,7 +422,7 @@ function TransferModal({ open, onClose, title }) {
             </div>
           )}
           <StepDots active={3} />
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>IMF Verification</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>IMF Code Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(4)} style={{ flex: 1 }}>← Back</Btn>
             <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify & Transfer</Btn>
@@ -418,60 +431,154 @@ function TransferModal({ open, onClose, title }) {
       )}
 
       {/* ── STEP 6: RECEIPT ── */}
-      {step === 6 && (
-        <div>
-          <div style={{
-            border: '2px dashed #ccc', borderRadius: 16, padding: '24px',
-            fontFamily: '"Courier New", monospace', fontSize: 13,
-          }}>
-            <div style={{ textAlign: 'center', marginBottom: 18 }}>
-              <div style={{ fontSize: 26, marginBottom: 6 }}>🏛</div>
-              <div style={{ fontSize: 17, fontWeight: 900, color: '#0a2240', letterSpacing: 1 }}>LIBERTY BANKING</div>
-              <div style={{ fontSize: 10, color: '#888', letterSpacing: 2, textTransform: 'uppercase' }}>Official Transfer Receipt</div>
-              <div style={{ borderBottom: '1px dashed #ccc', margin: '12px 0' }} />
-            </div>
+{step === 6 && (
+  <div>
+    <div style={{
+      border: '2px dashed #bbb',
+      borderRadius: 16,
+      padding: '24px',
+      fontFamily: '"Courier New", monospace',
+      fontSize: 13,
+      backgroundColor: '#ffffff',
+      color: '#000' // ✅ GLOBAL TEXT FIX
+    }}>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {[
-                ['Transaction Type', title],
-                ['Reference No.', ref],
-                ['Date & Time', txDate],
-                ['From', 'Checkings Account – ' + ACCOUNT.fullCard],
-                ['Beneficiary', fields.beneficiary],
-                ['Account / IBAN', fields.iban],
-                ['Bank', fields.bank],
-                ['SWIFT Code', fields.swift],
-                ['Routing No.', fields.routing],
-                ...(fields.address ? [['Bank Address', fields.address]] : []),
-                ...(fields.remarks ? [['Remarks', fields.remarks]] : []),
-              ].map(([k, v]) => (
-                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderBottom: '1px dotted #eee', paddingBottom: 7 }}>
-                  <span style={{ color: '#888', flexShrink: 0, fontSize: 12 }}>{k}</span>
-                  <span style={{ fontWeight: 700, textAlign: 'right', wordBreak: 'break-all', fontSize: 12 }}>{v}</span>
-                </div>
-              ))}
-            </div>
+      <div style={{ textAlign: 'center', marginBottom: 18 }}>
+        <div style={{ fontSize: 26, marginBottom: 6 }}>🏛</div>
 
-            <div style={{ borderTop: '2px dashed #ccc', marginTop: 14, paddingTop: 14, textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#888', marginBottom: 4, letterSpacing: 1, textTransform: 'uppercase' }}>Amount Transferred</div>
-              <div style={{ fontSize: 34, fontWeight: 900, color: '#0a2240' }}>
-                ${parseFloat(fields.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center', marginTop: 16, borderTop: '1px dashed #ccc', paddingTop: 14 }}>
-              <div style={{ color: '#22a55e', fontWeight: 800, fontSize: 15 }}>✔ Transfer Successful</div>
-              <div style={{ fontSize: 10, color: '#aaa', marginTop: 8 }}>Keep this receipt for your records.</div>
-              <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>Liberty Banking | FDIC Insured | libertybanking.com</div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-            <Btn variant="outline" onClick={handleClose} style={{ flex: 1 }}>Close</Btn>
-            <Btn variant="gold" onClick={() => window.print()} style={{ flex: 1 }}>🖨 Print Receipt</Btn>
-          </div>
+        <div style={{
+          fontSize: 17,
+          fontWeight: 900,
+          color: '#0a2240',
+          letterSpacing: 1
+        }}>
+          LIBERTY BANKING
         </div>
-      )}
+
+        <div style={{
+          fontSize: 10,
+          color: '#555', // ✅ DARKER
+          letterSpacing: 2,
+          textTransform: 'uppercase'
+        }}>
+          Official Transfer Receipt
+        </div>
+
+        <div style={{ borderBottom: '1px dashed #bbb', margin: '12px 0' }} />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {[
+          ['Transaction Type', title],
+          ['Reference No.', ref],
+          ['Date & Time', txDate],
+          ['From', 'Checkings Account – ' + ACCOUNT.fullCard],
+          ['Beneficiary', fields.beneficiary],
+          ['Account / IBAN', fields.iban],
+          ['Bank', fields.bank],
+          ['SWIFT Code', fields.swift],
+          ['Routing No.', fields.routing],
+          ...(fields.address ? [['Bank Address', fields.address]] : []),
+          ...(fields.remarks ? [['Remarks', fields.remarks]] : []),
+        ].map(([k, v]) => (
+          <div key={k} style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 16,
+            borderBottom: '1px dotted #ddd',
+            paddingBottom: 7
+          }}>
+            <span style={{
+              color: '#333', // ✅ DARKER LABEL
+              flexShrink: 0,
+              fontSize: 12,
+              fontWeight: 600
+            }}>
+              {k}
+            </span>
+
+            <span style={{
+              fontWeight: 700,
+              textAlign: 'right',
+              wordBreak: 'break-all',
+              fontSize: 12,
+              color: '#000' // ✅ FORCE BLACK TEXT
+            }}>
+              {v}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        borderTop: '2px dashed #bbb',
+        marginTop: 14,
+        paddingTop: 14,
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontSize: 10,
+          color: '#555', // ✅ DARKER
+          marginBottom: 4,
+          letterSpacing: 1,
+          textTransform: 'uppercase'
+        }}>
+          Amount Transferred
+        </div>
+
+        <div style={{
+          fontSize: 34,
+          fontWeight: 900,
+          color: '#0a2240'
+        }}>
+          ${parseFloat(fields.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        </div>
+      </div>
+
+      <div style={{
+        textAlign: 'center',
+        marginTop: 16,
+        borderTop: '1px dashed #bbb',
+        paddingTop: 14
+      }}>
+        <div style={{
+          color: '#15803d', // ✅ STRONG GREEN
+          fontWeight: 800,
+          fontSize: 15
+        }}>
+          ✔ Transfer Successful
+        </div>
+
+        <div style={{
+          fontSize: 10,
+          color: '#555', // ✅ DARKER
+          marginTop: 8
+        }}>
+          Keep this receipt for your records.
+        </div>
+
+        <div style={{
+          fontSize: 10,
+          color: '#555', // ✅ DARKER
+          marginTop: 2
+        }}>
+          Liberty Banking | FDIC Insured | libertybanking.com
+        </div>
+      </div>
+
+    </div>
+
+    <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+      <Btn variant="outline" onClick={handleClose} style={{ flex: 1 }}>
+        Close
+      </Btn>
+
+      <Btn variant="gold" onClick={() => window.print()} style={{ flex: 1 }}>
+        🖨 Print Receipt
+      </Btn>
+    </div>
+  </div>
+)}
     </Modal>
   );
 }
