@@ -284,14 +284,14 @@ function TransferModal({ open, onClose, title, account }) {
         <form onSubmit={handleOtpCode}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>🔐</div>
-            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>COT Code Verification</h3>
+            <h3 style={{ color: '#0a2240', fontWeight: 800, fontSize: 18, margin: '0 0 8px' }}>Cost of Transfer Code Verification</h3>
             <p style={{ color: '#666', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-              Insert your COT Code to continue this transaction<br />
+              Insert your Code to continue this transaction<br />
               If you do not know your code,kindly contact support.
             </p>
           </div>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 6, textAlign: 'center' }}>
-            Enter COT Code
+            Enter Code
           </label>
           <input
             type="text" value={otpCode}
@@ -311,10 +311,10 @@ function TransferModal({ open, onClose, title, account }) {
             </div>
           )}
           <StepDots active={1} />
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>COT Code Verification</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', margin: '4px 0 16px' }}>Code Verification</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn variant="outline" onClick={() => setStep(1)} style={{ flex: 1 }}>← Back</Btn>
-            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify COT Code</Btn>
+            <Btn variant="primary" type="submit" style={{ flex: 2 }}>Verify Code</Btn>
           </div>
         </form>
       )}
