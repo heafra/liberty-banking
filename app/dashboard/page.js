@@ -258,7 +258,7 @@ function TransferModal({ open, onClose, title, account }) {
             <InputRow icon="🏢" label="Bank" name="bank" placeholder="Recipient's bank name" value={fields.bank} onChange={handleChange} />
             <InputRow icon="🔑" label="SWIFT Code" name="swift" placeholder="e.g. CHASEUS33" value={fields.swift} onChange={handleChange} />
             <div style={{ gridColumn: '1 / -1' }}>
-              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" value={fields.routing} onChange={handleChange} />
+              <InputRow icon="🔢" label="Routing / Transit Number" name="routing" placeholder="9-digit routing number" optional value={fields.routing} onChange={handleChange} />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <InputRow icon="📍" label="Bank Address" name="address" placeholder="Street, City, State, ZIP" optional value={fields.address} onChange={handleChange} />
